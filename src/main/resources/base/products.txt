@@ -1,0 +1,4 @@
+PRO001;Arroz;1200
+PRO002;Lenteja;3200
+PRO003;Arbeja;1230
+PRO004;Garbanzo;3450
