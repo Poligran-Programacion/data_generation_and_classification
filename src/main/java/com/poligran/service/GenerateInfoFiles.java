@@ -1,5 +1,9 @@
 package com.poligran.service;
 
+import com.poligran.implementation.IElementFormatter;
+import com.poligran.repository.FileGeneratorRepository;
+import com.poligran.repository.RouteRepository;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -7,86 +11,137 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
- * TODO: Utilize FileGeneratorRepository and RouteRepository.
- * It is important to separate responsibilities for this class.
+ * Class for generating information files, including the creation of sellers and products.
+ * It uses a custom format to generate elements within the files.
  */
-class GenerateInfoFiles {
-    public static void main(String[] args) {
-        /// TODO: Bad route implementation
-        String basePath = "C:\\Users\\drack\\Desktop\\taller de programacion\\eclipse\\GenerateInfoFilesProject\\src\\";
+public class GenerateInfoFiles {
 
-        // Generar archivos de prueba
-        createSalesMenFile(5, basePath);
-        createProductsFile(10, basePath);
-        createSalesManInfoFile(5, basePath);
-        System.out.println("Archivos generados exitosamente.");
+    private static final FileGeneratorRepository fileRepository = new FileGeneratorRepository();
+    private static final RouteRepository routeRepository = new RouteRepository();
 
-        // Generar reporte de ventas
-        generateSalesReport(5, basePath);
+    static Random random = new Random();
+
+    /**
+     * Initial configuration function that creates sellers and products.
+     *
+     * @throws IOException if an I/O error occurs while creating files.
+     */
+    public static void initialConfig() throws IOException {
+
+        // Initial function that creates sellers
+        createSalesManInfoFile(5);
+
+        // Function that creates products
+        createProductsFile(1000);
+
+
+        /// Create files for sellers
+        createSalesManInfoFile();
+
     }
 
-    // Método para generar un archivo de ventas para cada vendedor
-    public static void createSalesMenFile(int salesmenCount, String basePath) {
-        try {
-            for (int i = 1; i <= salesmenCount; i++) {
-                FileWriter salesFileWriter = new FileWriter(basePath + "sales_Vendedor" + i + ".txt");
-                Random rand = new Random();
-                int salesCount = rand.nextInt(10) + 1; // Generar un número aleatorio de ventas entre 1 y 10
-                for (int j = 0; j < salesCount; j++) {
-                    int productId = rand.nextInt(10) + 1; // Generar un ID de producto aleatorio entre 1 y 10
-                    int quantity = rand.nextInt(5) + 1; // Generar una cantidad aleatoria entre 1 y 5
-                    salesFileWriter.write("IDProducto" + productId + ";" + quantity + "\n");
-                }
-                salesFileWriter.close();
+
+    /**
+     * Creates initial sellers.
+     *
+     * @param salesmanCount The number of sellers to create.
+     * @throws IOException if an I/O error occurs while creating files.
+     */
+    private static void createSalesManInfoFile(int salesmanCount) throws IOException {
+
+        createElementsOnFile(
+                routeRepository.getBaseRoute(),
+                "seller.txt",
+                index -> "CC;" + (System.currentTimeMillis() / 1000 + index) + ";Seller" + index,
+                salesmanCount
+        );
+
+        System.out.println("The sellers were generated");
+    }
+
+
+    /**
+     * Creates initial products.
+     *
+     * @param productsCount The number of products to create.
+     * @throws IOException if an I/O error occurs while creating files.
+     */
+    private static void createProductsFile(int productsCount) throws IOException{
+
+        createElementsOnFile(routeRepository.getBaseRoute(),
+                "products.txt",
+                index -> (System.currentTimeMillis() / 1000 + index) + ";Product_" + index + ";$" + random.nextInt(1300),
+                productsCount
+        );
+
+        System.out.println("The products were generated");
+    }
+
+
+    /**
+     * Creates a file for each seller using their name and identification.
+     * Reads seller information from the "seller.txt" file.
+     * Each line in the file is expected to have the following format:
+     * [Identification];[Name]
+     * For each seller, it creates a file with the seller's identification and name as the file name.
+     * @throws IOException if an I/O error occurs while reading or writing the files.
+     */
+    private static void createSalesManInfoFile() throws IOException {
+        /// TODO: The entry of an integer that defines the random sales of each salesperson must be implemented.
+        BufferedReader reader = new BufferedReader(new FileReader(routeRepository.getBaseRoute() + "seller.txt"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] sellerInfo = line.split(";");
+            if (sellerInfo.length >= 2) {
+                String sellerIdentifier = sellerInfo[1]; // Identificador único del vendedor
+                String sellerName = sellerInfo[2]; // Nombre del vendedor
+                String sellerFileName = sellerIdentifier + "_" + sellerName + ".txt"; // Nombre del archivo para este vendedor
+                createFileForSeller( routeRepository.getSalesRoute(), sellerFileName, sellerIdentifier);
             }
-        } catch (IOException e) {
-            System.err.println("Error al crear el archivo de ventas: " + e.getMessage());
         }
+        reader.close();
+        System.out.println("Files for sellers were generated");
     }
 
-    // Método para generar el reporte de ventas
-    public static void generateSalesReport(int salesmenCount, String basePath) {
-        try {
-            FileWriter salesReportWriter = new FileWriter(basePath + "sales_report.txt");
-            for (int i = 1; i <= salesmenCount; i++) {
-                int totalSales = 0;
-                BufferedReader salesReader = new BufferedReader(new FileReader(basePath + "sales_Vendedor" + i + ".txt"));
-                String salesLine;
-                while ((salesLine = salesReader.readLine()) != null) {
-                    totalSales++;
-                }
-                salesReader.close();
-                salesReportWriter.write("Vendedor" + i + ": " + totalSales + " ventas\n");
-            }
-            salesReportWriter.close();
-        } catch (IOException e) {
-            System.err.println("Error al generar el reporte de ventas: " + e.getMessage());
+
+    /**
+     * Base function responsible for creating elements within a file with customizable structure.
+     * This structure adheres to the Open And Close and Single Responsibility principles.
+     *
+     * @param route The route where the file will be created.
+     * @param fileName The name of the file.
+     * @param formatter The formatter interface to format elements.
+     * @param quantity The quantity of elements to create.
+     * @throws IOException if an I/O error occurs while creating files.
+     */
+    private static void createElementsOnFile(String route, String fileName, IElementFormatter formatter, int quantity) throws IOException {
+        FileWriter file = fileRepository.createFile(route, fileName);
+        for (int index = 1; index <= quantity; index++) {
+            file.write(formatter.format(index) + "\n");
         }
+
+        file.close();
     }
 
-    // Método para generar un archivo de información de vendedores
-    public static void createSalesManInfoFile(int salesmanCount, String basePath) {
-        try {
-            FileWriter salesmenFileWriter = new FileWriter(basePath + "salesmen.txt");
-            for (int i = 1; i <= salesmanCount; i++) {
-                salesmenFileWriter.write("TipoDocumento" + i + ";NúmeroDocumento" + i + ";NombresVendedor" + i + ";ApellidosVendedor" + i + "\n");
-            }
-            salesmenFileWriter.close();
-        } catch (IOException e) {
-            System.err.println("Error al crear el archivo de información de vendedores: " + e.getMessage());
-        }
+
+    /**
+     * Creates a file for a specific seller.
+     * Reads the sold products from the "products.txt" file and writes them into the seller's file.
+     * @param route The directory route where the file will be created.
+     * @param fileName The name of the file to be created for the seller.
+     * @param sellerIdentifier The unique identifier of the seller.
+     * @throws IOException if an I/O error occurs while reading or writing the files.
+     */
+    private static void createFileForSeller(String route, String fileName, String sellerIdentifier) throws IOException {
+        // TODO: se debe crear un ciclo que lea los productos vendidos y escriba en el archivo los correspondientes al vendedor.
+        FileWriter file = fileRepository.createFile(route, fileName);
+
+        file.write(sellerIdentifier + "\n");
+
+        file.close();
     }
 
-    // Método para generar un archivo de información de productos
-    public static void createProductsFile(int productsCount, String basePath) {
-        try {
-            FileWriter productsFileWriter = new FileWriter(basePath + "base/products.txt");
-            for (int i = 1; i <= productsCount; i++) {
-                productsFileWriter.write("IDProducto" + i + ";NombreProducto" + i + ";PrecioPorUnidadProducto" + i + "\n");
-            }
-            productsFileWriter.close();
-        } catch (IOException e) {
-            System.err.println("Error al crear el archivo de información de productos: " + e.getMessage());
-        }
-    }
+
 }
+
+
