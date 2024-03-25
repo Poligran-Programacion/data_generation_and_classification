@@ -9,10 +9,10 @@ public class Main {
 
         try{
 
+            /// Initial config
             GenerateInfoFiles.initialConfig();
-            /// Inicializacion de configuracion inicial.
 
-            System.out.println("Los elementos iniciales fueron generados con exito");
+            System.out.println("The initial element was created");
 
         }catch (IOException e){
             System.err.println(e.toString());
