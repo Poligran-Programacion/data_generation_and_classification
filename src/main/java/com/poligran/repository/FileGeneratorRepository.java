@@ -15,7 +15,7 @@ public class FileGeneratorRepository implements IFileGenerator {
     @Override
     public FileWriter createFile( String route, String fileName) {
         try {
-            return new FileWriter(route + fileName);
+            return new FileWriter(route + fileName, false);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
