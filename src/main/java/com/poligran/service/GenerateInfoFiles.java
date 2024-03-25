@@ -8,6 +8,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -28,15 +31,11 @@ public class GenerateInfoFiles {
      */
     public static void initialConfig() throws IOException {
 
-        // Initial function that creates sellers
         createSalesManInfoFile(5);
 
-        // Function that creates products
         createProductsFile(1000);
 
-
-        /// Create files for sellers
-        createSalesManInfoFile();
+        addRandomProductsToSellers();
 
     }
 
@@ -78,30 +77,7 @@ public class GenerateInfoFiles {
     }
 
 
-    /**
-     * Creates a file for each seller using their name and identification.
-     * Reads seller information from the "seller.txt" file.
-     * Each line in the file is expected to have the following format:
-     * [Identification];[Name]
-     * For each seller, it creates a file with the seller's identification and name as the file name.
-     * @throws IOException if an I/O error occurs while reading or writing the files.
-     */
-    private static void createSalesManInfoFile() throws IOException {
-        /// TODO: The entry of an integer that defines the random sales of each salesperson must be implemented.
-        BufferedReader reader = new BufferedReader(new FileReader(routeRepository.getBaseRoute() + "seller.txt"));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] sellerInfo = line.split(";");
-            if (sellerInfo.length >= 2) {
-                String sellerIdentifier = sellerInfo[1]; // Identificador único del vendedor
-                String sellerName = sellerInfo[2]; // Nombre del vendedor
-                String sellerFileName = sellerIdentifier + "_" + sellerName + ".txt"; // Nombre del archivo para este vendedor
-                createFileForSeller( routeRepository.getSalesRoute(), sellerFileName, sellerIdentifier);
-            }
-        }
-        reader.close();
-        System.out.println("Files for sellers were generated");
-    }
+
 
 
     /**
@@ -125,23 +101,66 @@ public class GenerateInfoFiles {
 
 
     /**
-     * Creates a file for a specific seller.
-     * Reads the sold products from the "products.txt" file and writes them into the seller's file.
-     * @param route The directory route where the file will be created.
-     * @param fileName The name of the file to be created for the seller.
-     * @param sellerIdentifier The unique identifier of the seller.
-     * @throws IOException if an I/O error occurs while reading or writing the files.
+     * Adds random products to each seller's file, selecting a random subset of products from the products list.
+     * The number of products added to each seller's file is approximately 30% of the total products available.
+     * The products are randomly selected from the list of available products.
+     *
+     * @throws IOException if an I/O error occurs while reading or writing files.
      */
-    private static void createFileForSeller(String route, String fileName, String sellerIdentifier) throws IOException {
-        // TODO: se debe crear un ciclo que lea los productos vendidos y escriba en el archivo los correspondientes al vendedor.
-        FileWriter file = fileRepository.createFile(route, fileName);
+    private static void addRandomProductsToSellers() throws IOException {
+        // TODO: The responsibilities of this function must be factored and divided.
+        // Retrieve the list of products
+        List<String> productsList = getProductList();
 
-        file.write(sellerIdentifier + "\n");
+        // Calculate total number of products and the count of random products (30% of total)
+        int totalProductsCount = productsList.size();
+        int randomProductsCount = (int) Math.ceil((30 / 100.0) * totalProductsCount);
 
-        file.close();
+        // Iterate through the sellers file and add random products to each seller
+        BufferedReader sellersReader = new BufferedReader(new FileReader(routeRepository.getBaseRoute() + "seller.txt"));
+        String sellerLine;
+        while ((sellerLine = sellersReader.readLine()) != null) {
+            String[] sellerInfo = sellerLine.split(";");
+            if (sellerInfo.length >= 2) {
+                String sellerIdentifier = sellerInfo[1];
+                String sellerName = sellerInfo[2];
+                String sellerFileName = sellerIdentifier + "_" + sellerName + ".txt";
+
+                // Select random products
+                List<String> randomProducts = new ArrayList<>();
+                Collections.shuffle(productsList);
+                for (int i = 0; i < randomProductsCount && i < productsList.size(); i++) {
+                    randomProducts.add(productsList.get(i));
+                }
+
+                // Write random products to the seller's file
+                FileWriter fileWriter = new FileWriter(routeRepository.getSalesRoute() + sellerFileName, true);
+                for (String product : randomProducts) {
+                    fileWriter.write(product + "\n");
+                }
+                fileWriter.close();
+            }
+        }
+
+        sellersReader.close();
+        System.out.println("Random products added to sellers' files");
     }
 
+    /**
+     * Retrieves the list of products from the "products.txt" file.
+     *
+     * @return A list containing each product entry from the file.
+     * @throws IOException if an I/O error occurs while reading the file.
+     */
+    static List<String> getProductList() throws IOException {
+        List<String> productsList = new ArrayList<>();
+        BufferedReader productsReader = new BufferedReader(new FileReader(routeRepository.getBaseRoute() + "products.txt"));
+        String productLine;
+        while ((productLine = productsReader.readLine()) != null) {
+            productsList.add(productLine);
+        }
+        productsReader.close();
+        return productsList;
+    }
 
 }
-
-
