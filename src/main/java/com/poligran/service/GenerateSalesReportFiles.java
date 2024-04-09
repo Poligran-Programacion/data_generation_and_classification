@@ -1,14 +1,17 @@
 package com.poligran.service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 public class GenerateSalesReportFiles {
 	
@@ -79,6 +82,8 @@ public class GenerateSalesReportFiles {
 	.sorted((k1, k2) -> -k1.getValue().compareTo(k2.getValue()))
 	.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
 			(e1, e2) -> e1, LinkedHashMap::new));
+	HashMap<String, String> printSellerSales = new HashMap<>();
+	sortedSellerSales.forEach((k, v) -> printSellerSales.put(k.toString(), v.toString()));
 	
 	//System.out.println(sortedSellerSales);//Tester
 	try {
@@ -92,5 +97,27 @@ public class GenerateSalesReportFiles {
 		System.out.println("An error occurred.");
 		e.printStackTrace();
 	    }
-	}
+	BufferedWriter bf = null;
+    try {
+    	bf = new BufferedWriter(new FileWriter("sellerSales.txt")); 
+    	  
+        for (Map.Entry<Integer, Integer> entry :
+        	sortedSellerSales.entrySet()) { 
+            bf.write(entry.getKey() + ","
+                     + entry.getValue()); 
+            bf.newLine(); 
+        } 
+        bf.flush(); 
+    } 
+    catch (IOException e) { 
+        e.printStackTrace(); 
+    } 
+    finally { 
+        try { 
+            bf.close(); 
+        } 
+        catch (Exception e) { 
+        } 
+    } 
+    }
 }		
