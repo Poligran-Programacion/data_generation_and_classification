@@ -10,8 +10,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.poligran.repository.FileGeneratorRepository;
+import com.poligran.repository.RouteRepository;
+
 
 public class GenerateSalesReportFiles {
+	
+    private static final FileGeneratorRepository fileRepository = new FileGeneratorRepository();
+    private static final RouteRepository routeRepository = new RouteRepository();
 	
 	public static void individualSalesReader (String args[]) {
 		
@@ -19,9 +25,7 @@ public class GenerateSalesReportFiles {
 		 * The path where the seller info file is specified.
 		 */
 		
-		String pathSeller = "C:\\Data\\Files\\Programing\\"
-			+ "data_generation_and_classification-main"
-			+ "\\src\\main\\resources\\base\\seller.txt";
+		String pathSeller = (routeRepository.getBaseRoute() + "seller.txt");
 		String line1 = "";
 		
 		int sellers = 0;//"sellers" variable is created for counting the number of sellers.
@@ -58,7 +62,8 @@ public class GenerateSalesReportFiles {
 		 */
 		
 		String line2 = "";
-		int a = 0;//This variable is used to change the file name in order to account for "sellers" variable.
+		int a = 1;//This variable is used to change the file name in order to account for "sellers" variable.
+
 		int sumPrices = 0;
 		HashMap<Integer, Integer> sellerSales = new HashMap<>();
 		
@@ -74,12 +79,10 @@ public class GenerateSalesReportFiles {
 			 * it changes for each seller.
 			 */
 			
-			String pathSales = "C:\\Data\\Files\\Programing\\"
-				+ "data_generation_and_classification-main"
-				+ "\\src\\main\\resources\\sales"
-				+ "\\" + (1712618559+a) + "_Seller" + (1+a) + ".txt";
-			a+=1;
-			
+			String sellerFileName = sellerIds.get(a) + "_" + sellerNames.get(a) + ".txt";
+			//System.out.println(sellerFileName);//Tester
+			String pathSales = (routeRepository.getSalesRoute() + sellerFileName);
+					
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(pathSales));
 				while((line2 = br.readLine()) != null) {
@@ -101,6 +104,9 @@ public class GenerateSalesReportFiles {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			
+			a+=1;
+			
 			}
 		
 		/*
@@ -127,7 +133,7 @@ public class GenerateSalesReportFiles {
 		//System.out.println(sortedSellerSales);//Tester
 		//System.out.println(printSellerSales);//Tester
 		
-		try (FileWriter csvWriter = new FileWriter("Total_sales_by_seller.csv")) {
+		try (FileWriter csvWriter = fileRepository.createFile(routeRepository.getReportRoute(), "Total_sales_by_seller.csv")) {
 			csvWriter.append("Name,Id Type,Id Number, Total Sales\n");// Write header row
 			for (Map.Entry<Integer, Integer> entry : sortedSellerSales.entrySet()) {
 				int key = entry.getKey();
