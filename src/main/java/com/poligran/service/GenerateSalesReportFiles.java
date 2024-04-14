@@ -19,7 +19,7 @@ public class GenerateSalesReportFiles {
     private static final FileGeneratorRepository fileRepository = new FileGeneratorRepository();
     private static final RouteRepository routeRepository = new RouteRepository();
 	
-	public static void individualSalesReader (String args[]) {
+	public static void individualSalesReader () {
 		
 		/*
 		 * The path where the seller info file is specified.
@@ -47,11 +47,7 @@ public class GenerateSalesReportFiles {
 				sellerIds.put(sellers,values[1]);
 				sellerIdType.put(sellers,values[0]);
 				}
-			//System.out.println(sellerNames);//Tester
-			//System.out.println(sellerIds);//Tester
-			//System.out.println(sellerIdType);//Tester
-			} catch (FileNotFoundException e){
-				e.printStackTrace();
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -80,7 +76,7 @@ public class GenerateSalesReportFiles {
 			 */
 			
 			String sellerFileName = sellerIds.get(a) + "_" + sellerNames.get(a) + ".txt";
-			//System.out.println(sellerFileName);//Tester
+
 			String pathSales = (routeRepository.getSalesRoute() + sellerFileName);
 					
 			try {
@@ -99,8 +95,6 @@ public class GenerateSalesReportFiles {
 					}
 				sellerSales.put(a,sumPrices);
 				sumPrices = 0;
-				} catch (FileNotFoundException e){
-					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -112,7 +106,7 @@ public class GenerateSalesReportFiles {
 		/*
 		 * A loop is used to read the file and write to each hashmap.
 		 */
-		//System.out.println(sellerSales);//Tester
+
 
 		Map <Integer, Integer> sortedSellerSales = sellerSales.entrySet().stream()
 			.sorted((k1, k2) -> -k1.getValue().compareTo(k2.getValue()))
@@ -130,10 +124,7 @@ public class GenerateSalesReportFiles {
 		 * from Integer to String to be able to write it later.
 		 */
 		
-		//System.out.println(sortedSellerSales);//Tester
-		//System.out.println(printSellerSales);//Tester
-		
-		try (FileWriter csvWriter = fileRepository.createFile(routeRepository.getReportRoute(), "Total_sales_by_seller.csv")) {
+		try (FileWriter csvWriter = fileRepository.createFile(routeRepository.getReportRoute(), "total_sales_by_seller.csv")) {
 			csvWriter.append("Name,Id Type,Id Number, Total Sales\n");// Write header row
 			for (Map.Entry<Integer, Integer> entry : sortedSellerSales.entrySet()) {
 				int key = entry.getKey();

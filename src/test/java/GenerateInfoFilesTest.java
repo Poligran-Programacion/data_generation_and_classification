@@ -25,5 +25,6 @@ public class GenerateInfoFilesTest {
         // Verify if the base files were created
         assertTrue(new File(routeRepository.getBaseRoute() + "products.txt").exists());
         assertTrue(new File(routeRepository.getBaseRoute() + "seller.txt").exists());
+        assertTrue(new File(routeRepository.getReportRoute() + "total_sales_by_seller.csv").exists());
     }
 }
