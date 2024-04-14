@@ -34,8 +34,8 @@ public class GenerateSalesReportFiles {
 		 * Id types and Id's are created.
 		 */
 		
-		HashMap<Integer, String> sellerNames = new HashMap<>();
-		HashMap<Integer, String> sellerIds = new HashMap<>();
+		HashMap<Integer, String> sellerNames  = new HashMap<>();
+		HashMap<Integer, String> sellerIds    = new HashMap<>();
 		HashMap<Integer, String> sellerIdType = new HashMap<>();
 	
 		try {
@@ -134,12 +134,11 @@ public class GenerateSalesReportFiles {
 				 * "key" variable, in order to use it for reading the other hashmaps and write
 				 * the CSV file.
 				 */
-				
-				//System.out.println(key);//Tester
+
 				csvWriter.append(sellerNames.get(key)).append(",");
 				csvWriter.append(sellerIdType.get(key)).append(",");
 				csvWriter.append(sellerIds.get(key)).append(",");
-				csvWriter.append("$"+printSellerSales.get(key)).append("\n");
+				csvWriter.append("$").append(printSellerSales.get(key)).append("\n");
 			}
 			System.out.println("Total sales by seller file created");
 			csvWriter.close();
